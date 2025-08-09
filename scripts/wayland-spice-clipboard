@@ -1,15 +1,21 @@
 #!/bin/bash
-# Clipboard bridge for Wayland to X11
 
-export WAYLAND_DISPLAY=wayland-0
-export DISPLAY=:0
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export WAYLAND_DISPLAY="wayland-0"
+export DISPLAY=":0"
 
 echo "Starting clipboard bridge"
 
+last_clipboard=""
+
 while true; do
-    clipboard_data=$(wl-paste 2>/dev/null || true)
-    if [ -n "$clipboard_data" ]; then
-        echo "$clipboard_data" | xclip -selection clipboard -i 2>/dev/null
+    current_clipboard=$(wl-paste 2>/dev/null || true)
+    
+    if [ "$current_clipboard" != "$last_clipboard" ] && [ -n "$current_clipboard" ]; then
+        echo "$current_clipboard" | xclip -selection clipboard -i 2>/dev/null
+        echo "Clipboard updated: $(echo "$current_clipboard" | wc -c) chars"
+        last_clipboard="$current_clipboard"
     fi
-    sleep 2
+    
+    sleep 1
 done
