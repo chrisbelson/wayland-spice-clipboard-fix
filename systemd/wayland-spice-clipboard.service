@@ -5,7 +5,8 @@ After=graphical-session.target
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/wayland-spice-clipboard
-Restart=on-failure
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=default.target
