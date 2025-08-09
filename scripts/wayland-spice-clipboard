@@ -5,15 +5,16 @@ export WAYLAND_DISPLAY="wayland-0"
 export DISPLAY=":0"
 
 echo "Starting clipboard bridge"
+echo "Display: $DISPLAY"
 
 last_clipboard=""
 
 while true; do
-    current_clipboard=$(wl-paste 2>/dev/null || true)
+    current_clipboard=$(wl-paste --no-newline 2>/dev/null || true)
     
     if [ "$current_clipboard" != "$last_clipboard" ] && [ -n "$current_clipboard" ]; then
-        echo "$current_clipboard" | xclip -selection clipboard -i 2>/dev/null
-        echo "Clipboard updated: $(echo "$current_clipboard" | wc -c) chars"
+        echo -n "$current_clipboard" | xclip -selection clipboard -i 2>/dev/null
+        echo "Synced: $(echo -n "$current_clipboard" | wc -c) chars"
         last_clipboard="$current_clipboard"
     fi
     
