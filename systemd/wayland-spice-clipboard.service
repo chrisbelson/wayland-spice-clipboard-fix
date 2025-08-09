@@ -1,0 +1,11 @@
+[Unit]
+Description=Wayland to Spice Clipboard Bridge
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/wayland-spice-clipboard
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
