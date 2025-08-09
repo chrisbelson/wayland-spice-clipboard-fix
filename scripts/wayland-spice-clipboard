@@ -2,10 +2,29 @@
 
 export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 export WAYLAND_DISPLAY="wayland-0"
-export DISPLAY=":0"
+
+# Detect X11 display
+if [ -n "$DISPLAY" ]; then
+    X11_DISPLAY="$DISPLAY"
+elif [ -S "/tmp/.X11-unix/X0" ]; then
+    X11_DISPLAY=":0"
+else
+    X11_SOCKET=$(ls /tmp/.X11-unix/X* 2>/dev/null | head -n1)
+    if [ -n "$X11_SOCKET" ]; then
+        X11_DISPLAY=":$(basename "$X11_SOCKET" | sed 's/X//')"
+    else
+        X11_DISPLAY=":0"
+    fi
+fi
+
+export DISPLAY="$X11_DISPLAY"
 
 echo "Starting clipboard bridge"
-echo "Display: $DISPLAY"
+echo "Using display: $DISPLAY"
+
+if ! xclip -version >/dev/null 2>&1; then
+    echo "Warning: Cannot connect to X11 display"
+fi
 
 last_clipboard=""
 
