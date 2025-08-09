@@ -1,0 +1,15 @@
+#!/bin/bash
+# Clipboard bridge for Wayland to X11
+
+export WAYLAND_DISPLAY=wayland-0
+export DISPLAY=:0
+
+echo "Starting clipboard bridge"
+
+while true; do
+    clipboard_data=$(wl-paste 2>/dev/null || true)
+    if [ -n "$clipboard_data" ]; then
+        echo "$clipboard_data" | xclip -selection clipboard -i 2>/dev/null
+    fi
+    sleep 2
+done
