@@ -3,17 +3,27 @@
 export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 export WAYLAND_DISPLAY="wayland-0"
 
-# Detect X11 display
+# Detect X11 Display where spice-vdagent is connected to
 if [ -n "$DISPLAY" ]; then
     X11_DISPLAY="$DISPLAY"
-elif [ -S "/tmp/.X11-unix/X0" ]; then
-    X11_DISPLAY=":0"
 else
-    X11_SOCKET=$(ls /tmp/.X11-unix/X* 2>/dev/null | head -n1)
-    if [ -n "$X11_SOCKET" ]; then
-        X11_DISPLAY=":$(basename "$X11_SOCKET" | sed 's/X//')"
-    else
-        X11_DISPLAY=":0"
+    # Find which display has an active X11 session
+    for display in :0 :1 :2 :10; do
+        if xset -display $display q >/dev/null 2>&1; then
+            X11_DISPLAY="$display"
+            break
+        fi
+    done
+    
+    # Fallback to socket detection if xset failed
+    if [ -z "$X11_DISPLAY" ]; then
+        if [ -S "/tmp/.X11-unix/X1" ]; then
+            X11_DISPLAY=":1"
+        elif [ -S "/tmp/.X11-unix/X0" ]; then
+            X11_DISPLAY=":0"
+        else
+            X11_DISPLAY=":0"
+        fi
     fi
 fi
 
@@ -22,8 +32,17 @@ export DISPLAY="$X11_DISPLAY"
 echo "Starting clipboard bridge"
 echo "Using display: $DISPLAY"
 
+# Verify that we can connect and clipboard works
 if ! xclip -version >/dev/null 2>&1; then
-    echo "Warning: Cannot connect to X11 display"
+    echo "Warning: Cannot connect to X11 display $DISPLAY"
+    # Try to find a working display
+    for test_display in :0 :1 :2 :10; do
+        if DISPLAY=$test_display xclip -version >/dev/null 2>&1; then
+            export DISPLAY="$test_display"
+            echo "Switched to display: $DISPLAY"
+            break
+        fi
+    done
 fi
 
 last_clipboard=""

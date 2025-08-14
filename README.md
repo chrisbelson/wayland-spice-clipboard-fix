@@ -20,7 +20,7 @@ Pipeline: Wayland clipboard → Bridge → X11 clipboard → spice-vdagent → H
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/wayland-spice-clipboard-fix.git
+git clone https://github.com/chrisbelson/wayland-spice-clipboard-fix.git
 cd wayland-spice-clipboard-fix
 ./install.sh
 ```
