@@ -13,7 +13,12 @@ if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
 fi
 
 echo "Installing dependencies..."
-sudo dnf install -y wl-clipboard xclip spice-vdagent
+if [[ -x "$(which dnf 2>&1)" ]]; then
+    sudo dnf install -y wl-clipboard xclip spice-vdagent
+fi
+if [[ -x "$(which apt 2>&1)" ]]; then
+    sudo apt install -y wl-clipboard xclip spice-vdagent
+fi
 
 echo "Installing bridge script..."
 sudo cp scripts/wayland-spice-clipboard /usr/local/bin/
